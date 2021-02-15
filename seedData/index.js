@@ -1,6 +1,8 @@
 import userModel from '../api/users/userModel';
 import ProductModel from '../api/products/productModel';
+import FoodModel from '../api/foods/foodModel';
 import {products} from './products.js';
+import {foods} from './foods.js';
 const users = [
   {
     'username': 'user1',
@@ -32,5 +34,17 @@ export async function loadUsers() {
       console.info(`${products.length} Products were successfully stored.`);
     } catch (err) {
       console.error(`failed to Load product Data: ${err}`);
+    }
+  } 
+
+  export async function loadFoods() {
+    console.log('load seed data');
+    console.log(foods.length);
+    try {
+      await FoodModel.deleteMany();
+      await FoodModel.collection.insertMany(foods);
+      console.info(`${foods.length} Foods were successfully stored.`);
+    } catch (err) {
+      console.error(`failed to Load food Data: ${err}`);
     }
   } 

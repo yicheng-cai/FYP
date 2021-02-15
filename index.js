@@ -1,9 +1,10 @@
 import dotenv from 'dotenv';
 import express from 'express';
 import productsRouter from './api/products';
+import foodsRouter from './api/foods';
 import bodyParser from 'body-parser';
 import './db';
-import {loadUsers, loadProducts} from './seedData'
+import {loadUsers, loadProducts, loadFoods} from './seedData'
 import usersRouter from './api/users';
 import session from 'express-session';
 import passport from './authenticate';
@@ -13,6 +14,7 @@ dotenv.config();
 if (process.env.SEED_DB) {
   loadUsers();
   loadProducts();
+  loadFoods();
 }
 const errHandler = (err, req, res, next) => {
   if(process.env.NODE_ENV === 'production') {
@@ -40,6 +42,7 @@ app.use(express.static('public'));
 app.use(passport.initialize());
 app.use('/api/products', passport.authenticate('jwt', {session: false}), productsRouter);
 app.use('/api/users', usersRouter);
+app.use('/api/foods', foodsRouter);
 app.use(errHandler);
 
 app.listen(port, () => {

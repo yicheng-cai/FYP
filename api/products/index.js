@@ -14,66 +14,59 @@ router.get('/:position', (req, res, next) => {
   productModel.findByproductDBposition(position).then(product => res.status(200).send(product)).catch(next);
 });
 
-
-/* router.get('/:position', (req, res) => {
-    const key =  parseInt(req.params.position);
-    const index = productsObject.products.map((product)=>{
-  return product.position;
-  }).indexOf(key);
-   if (index > -1) {
-       res.status(200).send(productsObject.products[index]).catch((error) => next(error));
-   } else {
-     res.status(404).send({message: `Unable to find product with position: ${key}.`, status: 404});
-     }
-  });
-
-
-  router.post('/', (req, res) => {
-    let newProduct = req.body;
-    if (newProduct && newProduct.title) {
-      !newProduct.position ? newProduct.position = Math.round(Math.random() * 10000) : newProduct 
-      productsObject.products.push(newProduct);
-      res.status(201).send(newProduct).catch((error) => next(error));
-    } else {
-      res.status(405).send({
-        message: "Invalid newProduct Data",
-        status: 405
+router.post('/:position', async (req, res, next) => {
+  try {const value = req.body.value;
+    if(!value){
+      res.status(403).json({
+        code: 403,
+        msg: 'NO value has entered'
       });
     }
-  });
-
-  // Update a product
-router.put('/:position', (req, res) => {
-    const key = parseInt(req.params.position);
-    const updateProduct = req.body;
-    const index = productsObject.products.map((product) => {
-      return product.position;
-    }).indexOf(key);
-    if (index !== -1) {
-      !updateProduct.position ? updateProduct.position = key : updateProduct
-      productsObject.products.splice(index, 1, updateProduct);
-      res.status(200).send(updateProduct).catch((error) => next(error));
-    } else {
-      res.status(404).send({
-        message: 'Unable to find product',
-        status: 404
+    const position =req.params.position;
+    const product = await productModel.findByproductDBposition(position);
+    if (product!=null) {
+      await product.push(value);
+      await product.save(); 
+      res.status(201).json({
+        code:201,
+        msg: 'The product has been posted'
+        }); 
+    }
+    else {
+      if(value!=null){
+      res.status(401).json({
+        code: 401,
+        msg: 'The product does not exist'
       });
     }
-  });
+  }} catch (error) {
+    next(error);
+  }
+});
 
-// Delete a movie
-router.delete('/:position', (req, res) => {
-    const key =  parseInt(req.params.position);
-    const index = productsObject.products.map((product)=>{
-  return product.position;
-  }).indexOf(key);
-   if (index > -1) {
-    productsObject.products.splice(index, 1);
-       res.status(200).send({message: `Deleted product position: ${key}.`,status: 200}).catch((error) => next(error));
-   } else {
-     res.status(404).send({message: `Unable to find product with position: ${key}.`, status: 404}).catch((error) => next(error));
-     }
-  });
- */
+
+
+router.put('/:position', async (req, res, next)=>{
+  const position = parseInt(req.params.position);
+  const updateProduct = req.body;
+  const product = await productModel.findByproductDBposition(position);
+  if(product){
+    productModel.findByproductDBposition(position).then(product =>res.status(200).send(product))
+  .catch(next);
+  }else{
+    res.status(404).send({message: `Unable to find product with position: ${position}.`, status: 404});
+  }
+});
+
+router.delete('/:position', async (req,res, next)=>{
+  const position = parseInt(req.params.position);
+  const product = await productModel.findByproductDBposition(position);
+  if(product){
+    productModel.deleteOne({position: position}).then(res.status(200).send("delete successfully"))
+  .catch(next);
+  } else{
+    res.status(404).send("can't find the product wanted to delete");
+  }
+});
 
 export default router;
