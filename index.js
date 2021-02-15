@@ -3,15 +3,16 @@ import express from 'express';
 import productsRouter from './api/products';
 import bodyParser from 'body-parser';
 import './db';
-import {loadUsers} from './seedData'
+import {loadUsers, loadProducts} from './seedData'
 import usersRouter from './api/users';
 import session from 'express-session';
-import authenticate from './authenticate';
+import passport from './authenticate';
 
 dotenv.config();
 
 if (process.env.SEED_DB) {
   loadUsers();
+  loadProducts();
 }
 const errHandler = (err, req, res, next) => {
   if(process.env.NODE_ENV === 'production') {
@@ -35,7 +36,9 @@ app.use(session({
 
 
 app.use(express.static('public'));
-app.use('/api/products', authenticate, productsRouter);
+
+app.use(passport.initialize());
+app.use('/api/products', passport.authenticate('jwt', {session: false}), productsRouter);
 app.use('/api/users', usersRouter);
 app.use(errHandler);
 

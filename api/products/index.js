@@ -1,14 +1,21 @@
 import express from 'express';
-import {productsObject} from './product';
+import productModel from './productModel'
 
 const router = express.Router(); // eslint-disable-line
 
-router.get('/', (req, res) => {
-  res.status(200).send(productsObject).catch((error) => next(error));
+router.get('/', (req, res, next) => {
+  productModel.find().then(products => res.status(200).send(products)).catch(next);
 });
 
 
-router.get('/:position', (req, res) => {
+
+router.get('/:position', (req, res, next) => {
+  const position = parseInt(req.params.position);
+  productModel.findByproductDBposition(position).then(product => res.status(200).send(product)).catch(next);
+});
+
+
+/* router.get('/:position', (req, res) => {
     const key =  parseInt(req.params.position);
     const index = productsObject.products.map((product)=>{
   return product.position;
@@ -67,6 +74,6 @@ router.delete('/:position', (req, res) => {
      res.status(404).send({message: `Unable to find product with position: ${key}.`, status: 404}).catch((error) => next(error));
      }
   });
-
+ */
 
 export default router;
