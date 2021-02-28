@@ -1,0 +1,4 @@
+spec:
+    - test/functional/api/**/index.js
+require: '@babel/register'
+exit: true

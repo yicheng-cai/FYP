@@ -45,9 +45,11 @@ app.use(passport.initialize());
 app.use('/api/products', passport.authenticate('jwt', {session: false}), productsRouter);
 app.use('/api/users', usersRouter);
 app.use('/api/foods', foodsRouter);
-app.use('/api/clothes', clothesRouter);
+app.use('/api/clothes', passport.authenticate('jwt', {session: false}), clothesRouter);
 app.use(errHandler);
 
-app.listen(port, () => {
+const server = app.listen(port, () => {
   console.info(`Server running at ${port}`);
 });
+
+module.exports = server;

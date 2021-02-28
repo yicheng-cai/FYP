@@ -9,9 +9,15 @@ router.get('/', (req, res, next) => {
 
 
 
-router.get('/:position', (req, res, next) => {
+router.get('/:position', async(req, res, next) => {
   const position = parseInt(req.params.position);
+  const clothes = await clothesModel.findByclothesDBposition(position);
+  if(clothes){
   clothesModel.findByclothesDBposition(position).then(clothes => res.status(200).send(clothes)).catch(next);
+}else{
+  res.status(404).send({message: `Unable to find clothes with position: ${position}.`, status: 404});
+}
+
 });
 
 router.post('/:position', async (req, res, next) => {

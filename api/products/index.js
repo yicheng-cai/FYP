@@ -9,9 +9,16 @@ router.get('/', (req, res, next) => {
 
 
 
-router.get('/:position', (req, res, next) => {
+router.get('/:position', async(req, res, next) => {
   const position = parseInt(req.params.position);
+  const product = await productModel.findByproductDBposition(position);
+  if(product){
+
   productModel.findByproductDBposition(position).then(product => res.status(200).send(product)).catch(next);
+}else{
+  res.status(404).send({message: `Unable to find product with position: ${position}.`, status: 404});
+}
+
 });
 
 router.post('/:position', async (req, res, next) => {
