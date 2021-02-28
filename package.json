@@ -9,7 +9,7 @@
     "compile:clothesmodels": "babel ./api/clothes --out-dir build/api/clothes",
     "compile:usermodels": "babel ./api/users --out-dir build/api/users",
     "compile:foodsmodels": "babel ./api/foods --out-dir build/api/foods",
-    "compile:productmodels": "babel ./api/product --out-dir build/api/products",
+    "compile:productmodels": "babel ./api/products --out-dir build/api/products",
     "compile:models": "npm-run-all compile:clothesmodels compile:foodsmodels compile:usermodels compile:productmodels",
     "compile:seed": "babel ./seedData --out-dir build/seedData",
     "compile:authenticate": "babel ./authenticate --out-dir build/authenticate",
