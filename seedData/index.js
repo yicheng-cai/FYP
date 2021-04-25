@@ -1,20 +1,9 @@
 import userModel from '../api/users/userModel';
 import ProductModel from '../api/products/productModel';
-import FoodModel from '../api/foods/foodModel';
-import ClothesModel from '../api/clothes/clothesModel';
 import {products} from './products.js';
-import {foods} from './foods.js';
-import {clothes} from './clothes.js';
-const users = [
-  {
-    'username': 'user1',
-    'password': 'user1',
-  },
-  {
-    'username': 'user2',
-    'password': 'user2',
-  },
-];
+import { users } from './users';
+
+
 
 export async function loadUsers() {
   console.log('load user Data');
@@ -36,29 +25,5 @@ export async function loadUsers() {
       console.info(`${products.length} Products were successfully stored.`);
     } catch (err) {
       console.error(`failed to Load product Data: ${err}`);
-    }
-  } 
-
-  export async function loadFoods() {
-    console.log('load seed data');
-    console.log(foods.length);
-    try {
-      await FoodModel.deleteMany();
-      await FoodModel.collection.insertMany(foods);
-      console.info(`${foods.length} Foods were successfully stored.`);
-    } catch (err) {
-      console.error(`failed to Load food Data: ${err}`);
-    }
-  } 
-
-  export async function loadClothes() {
-    console.log('load seed data');
-    console.log(clothes.length);
-    try {
-      await ClothesModel.deleteMany();
-      await ClothesModel.collection.insertMany(clothes);
-      console.info(`${clothes.length} clothes were successfully stored.`);
-    } catch (err) {
-      console.error(`failed to Load food Data: ${err}`);
     }
   } 

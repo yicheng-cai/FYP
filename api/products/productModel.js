@@ -1,27 +1,41 @@
 import mongoose from 'mongoose';
 
-const Schema = mongoose.Schema;
-
-
-const ProductSchema = new Schema({
-  position: { type: Number, required: true, unique: true },
-  title: { type: String },
-  epid: { type: Number },
-  link: { type: String },
+// const reviewSchema = new mongoose.Schema(
+//   {
+//     _id: { type: Number},
+//     name: { type: String, required: true },
+//     rating: { type: Number, default: 0 },
+//     comment: { type: String, required: true },
+//   },
+//   {
+//     timestamps: true,
+//   }
+// );
+const prodctSchema = new mongoose.Schema({
+  _id: { type: Number},
+  name: { type: String },
   image: { type: String },
-  hotness: [{ type: String }],
-  condition: { type: String },
-  is_auction: { type: Boolean },
-  buy_it_now: { type: Boolean },
-  free_returns: { type: Boolean },
-  item_location: { type: String },
-  price: { type: Number },
-  sponsored: { type: Boolean },
-  shipping_cost: { type: Number },
+  brand: { type: String },
+  price: { type: Number, default: 0 },
+  category: { type: String },
+  countInStock: { type: Number, default: 0 },
+  description: { type: String },
+  rating: { type: Number, default: 0 },
+  numReviews: { type: Number, default: 0 },
+  reviews: { type: Array },
 });
 
-ProductSchema.statics.findByproductDBposition = function (position) {
-  return this.findOne({ position: position });
-};
+const productModel = mongoose.model('Product', prodctSchema);
 
-export default mongoose.model('Products', ProductSchema);
+export default productModel;
+
+
+
+// prodctSchema.statics.findByproductDBid = function (id) {
+//   return this.findOne({ id: id });
+// };
+
+// export default mongoose.model('Products', prodctSchema);
+
+
+

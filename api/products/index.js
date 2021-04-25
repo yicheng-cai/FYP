@@ -1,79 +1,138 @@
 import express from 'express';
-import productModel from './productModel'
+import Product from './productModel';
+import { isAuth, isAdmin } from '../../ulit';
+import data from "../data"
 
-const router = express.Router(); // eslint-disable-line
+const router = express.Router();
 
-router.get('/', (req, res, next) => {
-  productModel.find().then(products => res.status(200).send(products)).catch(next);
+router.get('/', async (req, res) => {
+  const category = req.query.category ? { category: req.query.category } : {};
+  const searchKeyword = req.query.searchKeyword
+    ? {
+        name: {
+          $regex: req.query.searchKeyword,
+          $options: 'i',
+        },
+      }
+    : {};
+  const sortOrder = req.query.sortOrder
+    ? req.query.sortOrder === 'lowest'
+      ? { price: 1 }
+      : { price: -1 }
+    : { _id: -1 };
+  const products = await Product.find({ ...category, ...searchKeyword }).sort(
+    sortOrder
+  );
+  res.send(products);
 });
 
 
 
-router.get('/:position', async(req, res, next) => {
-  const position = parseInt(req.params.position);
-  const product = await productModel.findByproductDBposition(position);
-  if(product){
+// router.get('/:id', async (req, res, next ) => {
+//   const id = parseInt(req.params._id);
+//   const product = await Product.findOne({ id: id });
+//   if (product) {
+//     Product.findOne(id).then(product => res.status(200).send(product)).catch(next);
+//   } else {
+//     res.status(404).send({ message: 'Product Not Found.'});
+//   }
+// });
 
-  productModel.findByproductDBposition(position).then(product => res.status(200).send(product)).catch(next);
-}else{
-  res.status(404).send({message: `Unable to find product with position: ${position}.`, status: 404});
-}
+// router.get('/:id', async(req, res, next) => {
+//   const id = parseInt(req.params.id);
+//   const product = await Product.findByproductDBid(id);
+//   if(product){
+//     Product.findByproductDBid(id).then(product => res.status(200).send(product)).catch(next);
+// }else{
+//   res.status(404).send({message: `Unable to find product with id: ${id}.`, status: 404});
+// }
+// });
+router.get("/:id", (req, res) => {
+    const productId = req.params.id;
+    const product = data.products.find(x => x._id===productId);
+    if (product)
+      res.send(product);
+      else
+      res.status(404).send({ msg: "Product Not Found "});
 
 });
 
-router.post('/:position', async (req, res, next) => {
-  try {const value = req.body.value;
-    if(!value){
-      res.status(403).json({
-        code: 403,
-        msg: 'NO value has entered'
-      });
-    }
-    const position =req.params.position;
-    const product = await productModel.findByproductDBposition(position);
-    if (product!=null) {
-      await product.push(value);
-      await product.save(); 
-      res.status(201).json({
-        code:201,
-        msg: 'The product has been posted'
-        }); 
-    }
-    else {
-      if(value!=null){
-      res.status(401).json({
-        code: 401,
-        msg: 'The product does not exist'
-      });
-    }
-  }} catch (error) {
-    next(error);
+router.post('/:id/reviews', isAuth, async (req, res) => {
+  const productId = req.params.id;
+  const product = data.products.find(x => x._id===productId);
+  if (product) {
+    const review = {
+      name: req.body.name,
+      rating: req.body.rating,
+      comment: req.body.comment,
+    };
+    product.reviews.push(review);
+    product.numReviews = product.reviews.length;
+    const updatedProduct = await product.save();
+    res.status(201).send({
+      data: updatedProduct.reviews[updatedProduct.reviews.length - 1],
+      message: 'Review saved successfully.',
+    });
+  } else {
+    res.status(404).send({ message: 'Product Not Found' });
   }
 });
 
 
+router.put('/:id', isAuth, isAdmin, async (req, res) => {
+  const productId = req.params.id;
+  const product = data.products.find(x => x._id===productId);
+  // const productId = req.params._id;
+  // const product = await Product.findById(productId);
+  if (product) {
+    product._id=req.body.id;
+    product.name = req.body.name;
+    product.price = req.body.price;
+    product.image = req.body.image;
+    product.brand = req.body.brand;
+    product.category = req.body.category;
+    product.countInStock = req.body.countInStock;
+    product.description = req.body.description;
+    const updatedProduct = await product.save();
+    if (updatedProduct) {
+      return res
+        .status(200)
+        .send({ message: 'Product Updated', data: updatedProduct });
+    }
+  }
+  return res.status(500).send({ message: ' Error in Updating Product.' });
+});
 
-router.put('/:position', async (req, res, next)=>{
-  const position = parseInt(req.params.position);
-  const updateProduct = req.body;
-  const product = await productModel.findByproductDBposition(position);
-  if(product){
-    productModel.findByproductDBposition(position).then(product =>res.status(200).send(product))
-  .catch(next);
-  }else{
-    res.status(404).send({message: `Unable to find product with position: ${position}.`, status: 404});
+router.delete('/:id', isAuth, isAdmin, async (req, res, next) => {
+  const deletedProduct = await Product.findOne(req.params._id);
+  if (deletedProduct) {
+    Product.deleteOne({id: req.params._id}).then(res.status(200).send("delete successfully"))
+    .catch(next);
+  } else {
+    res.send('Error in Deletion.');
   }
 });
 
-router.delete('/:position', async (req,res, next)=>{
-  const position = parseInt(req.params.position);
-  const product = await productModel.findByproductDBposition(position);
-  if(product){
-    productModel.deleteOne({position: position}).then(res.status(200).send("delete successfully"))
-  .catch(next);
-  } else{
-    res.status(404).send("can't find the product wanted to delete");
+router.post('/',  async (req, res) => {
+  const product = new Product({
+    _id: req.body.id,
+    name: req.body.name,
+    price: req.body.price,
+    image: req.body.image,
+    brand: req.body.brand,
+    category: req.body.category,
+    countInStock: req.body.countInStock,
+    description: req.body.description,
+    rating: req.body.rating,
+    numReviews: req.body.numReviews,
+  });
+  const newProduct = await product.save();
+  if (newProduct) {
+    return res
+      .status(201)
+      .send({ message: 'New Product Created', data: newProduct });
   }
+  return res.status(500).send({ message: ' Error in Creating Product.' });
 });
 
 export default router;
